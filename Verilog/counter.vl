@@ -1,0 +1,70 @@
+// Install the file: iverilog-10.0-x86_setup.exe from: bleyer.org/icarus/
+// Add the path C:\iverilog\bin to the PATH environment variable
+// Go the folder containing counter.vl, then execute the following commands from the command prompt:
+// iverilog -o counter counter.vl
+// vvp counter
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+// We use behavioral descriptions for the flip-flops because we do not care about their internal structure
+
+module D_FlipFlop(output reg Q, input D, input clear, input clk);
+   always @(posedge clk)
+   begin
+      if(clear) Q <= 0;
+      else Q <= D;
+   end
+endmodule
+
+module JK_FlipFlop(output reg Q, input J, input K, input clear, input clk);
+   always @(posedge clk)
+   begin
+      if(clear) Q <= 0;
+      else if (J ^ K) Q <= J;
+      else if (J & K) Q <= ~Q;
+   end
+endmodule
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+// We use structural descriptions for the binary counter because we care about its internal structure
+
+module BinaryCounter(output [3:0] A, output carry, input enable, input clear, input clk);
+   wire [3:0] w;
+   JK_FlipFlop f1(A[0], enable, enable, clear, clk);
+   and(w[0], enable, A[0]);
+   JK_FlipFlop f2(A[1], w[0], w[0], clear, clk);
+   and(w[1], w[0], A[1]);
+   JK_FlipFlop f3(A[2], w[1], w[1], clear, clk);
+   and(w[2], w[1], A[2]);
+   JK_FlipFlop f4(A[3], w[2], w[2], clear, clk);
+   and(carry, w[2], A[3]);
+endmodule
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+// Use exactly one test bench
+
+module Test_BinaryCounter();
+   wire [3:0] A;
+   wire carry;
+   reg enable, clear, clk;
+   integer i;
+   
+   BinaryCounter bc(A, carry, enable, clear, clk);
+
+   initial
+   begin
+      $monitor($time, " carry=%b, A[3]=%b, A[2]=%b, A[1]=%b, A[0]=%b", carry, A[3], A[2], A[1], A[0]);
+      
+      clk <= 0;
+      #10 clk <= 1; enable <= 1; clear <= 1;
+      #10 clk <= 0; clear <= 0;
+
+      for(i=0;i<32;i=i+1)
+      begin
+         #10 clk <= ~clk;
+      end
+      
+      $finish;
+   end
+endmodule
+
+///////////////////////////////////////////////////////////////////////////////////////////////////

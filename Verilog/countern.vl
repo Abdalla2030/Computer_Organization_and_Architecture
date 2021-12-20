@@ -1,0 +1,89 @@
+// Install the file: iverilog-10.0-x86_setup.exe from: bleyer.org/icarus/
+// Add the path C:\iverilog\bin to the PATH environment variable
+// Go the folder containing counter.vl, then execute the following commands from the command prompt:
+// iverilog -o countern countern.vl
+// vvp countern
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+
+`define NUM_BITS 2  // Try 1, 2, 3, 4, 5
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+// We use behavioral descriptions for the flip-flops because we do not care about their internal structure
+// We will NOT ask for behavioral descriptions in the exams
+
+module D_FlipFlop(output reg Q, input D, input clear, input clk);
+   always @(posedge clk)
+   begin
+      if(clear) Q <= 0;
+      else Q <= D;
+   end
+endmodule
+
+module JK_FlipFlop(output reg Q, input J, input K, input clear, input clk);
+   always @(posedge clk)
+   begin
+      if(clear) Q <= 0;
+      else if (J ^ K) Q <= J;
+      else if (J & K) Q <= ~Q;
+   end
+endmodule
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+// We use structural descriptions for the binary counter because we care about its internal structure
+// We will ask for structural descriptions in the exams and assignments
+
+module BinaryCounter(output [N:0] A, output carry, input enable, input clear, input clk);
+   parameter N = `NUM_BITS-1;
+   
+   wire [N+1:0] w;
+   buf(w[0], enable);
+   
+   generate
+   genvar i;
+   for(i=0;i<=N;i=i+1)
+   begin
+      JK_FlipFlop f2(A[i], w[i], w[i], clear, clk);
+      and(w[i+1], w[i], A[i]);
+   end
+   endgenerate
+   
+   buf(carry, w[N+1]);
+endmodule
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+// Use exactly one test bench
+// We will NOT ask for test bench in the exams
+
+module Test_BinaryCounter();
+   parameter N = `NUM_BITS-1;
+   
+   wire [N:0] A;
+   wire carry;
+   reg enable, clear, clk;
+   integer i;
+   
+   BinaryCounter bc(A, carry, enable, clear, clk);
+
+   initial
+   begin
+      if(N==4) $monitor($time, " carry=%b, A[4]=%b, A[3]=%b, A[2]=%b, A[1]=%b, A[0]=%b", carry, A[4], A[3], A[2], A[1], A[0]);
+      if(N==3) $monitor($time, " carry=%b, A[3]=%b, A[2]=%b, A[1]=%b, A[0]=%b", carry, A[3], A[2], A[1], A[0]);
+      if(N==2) $monitor($time, " carry=%b, A[2]=%b, A[1]=%b, A[0]=%b", carry, A[2], A[1], A[0]);
+      if(N==1) $monitor($time, " carry=%b, A[1]=%b, A[0]=%b", carry, A[1], A[0]);
+      if(N==0) $monitor($time, " carry=%b, A[0]=%b", carry, A[0]);
+      
+      clk <= 0;
+      #10 clk <= 1; enable <= 1; clear <= 1;
+      #10 clk <= 0; clear <= 0;
+
+      while(carry==0)
+      begin
+         #10 clk <= ~clk;
+      end
+      
+      $finish;
+   end
+endmodule
+
+///////////////////////////////////////////////////////////////////////////////////////////////////

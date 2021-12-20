@@ -1,0 +1,55 @@
+// Install the file: iverilog-10.0-x86_setup.exe from: bleyer.org/icarus/
+// Add the path C:\iverilog\bin to the PATH environment variable
+// Go the folder containing adder.vl, then execute the following commands from the command prompt:
+// iverilog -o adder adder.vl
+// vvp adder 
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+
+module half_adder(sum, carry, a, b);
+   input a, b;
+   output sum, carry;
+   xor(sum, a, b);
+   and(carry, a, b); 
+endmodule
+
+module full_adder(sum, carry, x, y, z);
+   input x, y, z;
+   output sum, carry;
+   wire s1, c1, c2;
+   half_adder h1(s1, c1, x, y);
+   half_adder h2(sum, c2, s1, z);
+   or(carry, c1, c2);
+endmodule
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+
+module half_adder_test(a, b);
+   input a, b;
+   wire sum, carry;
+   half_adder f(sum, carry, a, b);
+   initial
+   begin
+      $monitor("a=%b, b=%b, carry=%b, sum=%b", a, b, carry, sum);
+   end
+endmodule
+
+module full_adder_test(a, b, c);
+   input a, b, c;
+   wire sum, carry;
+   full_adder f(sum, carry, a, b, c);
+   initial
+   begin
+      $monitor("a=%b, b=%b, c=%b, carry=%b, sum=%b", a, b, c, carry, sum);
+   end
+endmodule
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+
+module main();
+    wire a=0, b=1, c=0; // try other values
+    full_adder_test ft(a, b, c); // try also uncommenting this line and commenting the following line
+    //half_adder_test ht(a, b);
+endmodule
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
