@@ -1,8 +1,8 @@
 // Install the file: iverilog-10.0-x86_setup.exe from: bleyer.org/icarus/
 // Add the path C:\iverilog\bin to the PATH environment variable
-// Go the folder containing adder.vl, then execute the following commands from the command prompt:
-// iverilog -o ALU_4 bits ALU_4 bits.vl
-// vvp ALU_4 bits
+// Go the folder containing ALU_4_bits.vl, then execute the following commands from the command prompt:
+// iverilog -o ALU_4_bits ALU_4_bits.vl
+// vvp ALU_4_bits
 
 ///////////////////////////////////////////////////////////////////////////////////////
 //      Assignment -1 (( 4-bit ALU ))         
