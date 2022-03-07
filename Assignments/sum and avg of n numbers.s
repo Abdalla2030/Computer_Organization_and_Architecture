@@ -88,8 +88,8 @@ input_loop:
     call _printf                   # call printf
     add $12, %esp                  # pop the two parameters
 	
-	movl %ebp, %esp                #restore the old stack pointer - release all used memory
-	popl %ebp                      #restore old frame pointer (the caller function frame)
+    movl %ebp, %esp                #restore the old stack pointer - release all used memory
+    popl %ebp                      #restore old frame pointer (the caller function frame)
          
     ret                            # end the main function
 
